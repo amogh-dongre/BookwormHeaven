@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Search Free Ebooks</title>
+  <script>
+    if (localStorage.getItem('darkMode') === 'true') {
+      document.documentElement.classList.add('dark-mode');
+    }
+  </script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='clock.css') }}">
+  <script src="{{ url_for('static', filename='clock.js') }}" defer></script>
+  <script src="{{ url_for('static', filename='theme-toggle.js') }}" defer></script>
+</head>
+<body>
+  <div class="main-layout-container">
+    <div class="analog-clock">
+      <div class="hand hour-hand"></div>
+      <div class="hand minute-hand"></div>
+      <div class="hand second-hand"></div>
+      <div class="center-dot"></div>
+    </div>
+
+    <div class="main-content-area">
+      <div class="toggle-container">
+        <button id="darkModeToggle">🌓 Toggle Dark Mode</button>
+      </div>
+
+      <div class="dashboard-container">
+        <h2>🌐 Search Free Ebooks (Project Gutenberg)</h2>
+        
+        <div class="dashboard-actions" style="margin-bottom: 20px;">
+            <a href="{{ url_for('dashboard') }}" class="filter-button secondary-button">Back to Dashboard</a>
+        </div>
+
+        <form id="publicSearchForm" class="search-form">
+          <label>
+            Search Term (Title or Author):
+            <input type="text" name="query" id="searchQuery" required placeholder="e.g., 'Pride and Prejudice' or 'Jane Austen'">
+          </label>
+          <button type="submit" class="filter-button">Search</button>
+        </form>
+
+        <div id="resultsContainer" class="book-results-container">
+          <p class="placeholder-text">Enter a search term and hit 'Search' to find free HTML ebooks from Project Gutenberg.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="previewModal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h3 id="modalTitle"></h3>
+            <div id="modalContent"></div>
+            <div class="modal-actions">
+                <button id="modalAddButton" class="filter-button" style="background-color: var(--accent); color: white;">➕ Add to My Books</button>
+            </div>
+        </div>
+    </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const form = document.getElementById('publicSearchForm');
+        const resultsContainer = document.getElementById('resultsContainer');
+        const searchInput = document.getElementById('searchQuery');
+
+        const modal = document.getElementById('previewModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalContent = document.getElementById('modalContent');
+        const closeModalButton = document.querySelector('.close-button');
+        let modalAddButton = document.getElementById('modalAddButton'); // Get button reference
+
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const query = searchInput.value.trim();
+            if (!query) return;
+
+            resultsContainer.innerHTML = '<p class="loading-text">Searching Project Gutenberg...</p>';
+            
+            try {
+                const response = await fetch(`/api/search_books?q=${encodeURIComponent(query)}`);
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    displayResults(result.books);
+                } else {
+                    resultsContainer.innerHTML = `<p class="error-text">Error: ${result.error || 'Failed to fetch results from the book API.'}</p>`;
+                }
+
+            } catch (error) {
+                console.error('Fetch error:', error);
+                resultsContainer.innerHTML = '<p class="error-text">A network error occurred. Please try again.</p>';
+            }
+        });
+
+        const displayResults = (books) => {
+            if (books.length === 0) {
+                resultsContainer.innerHTML = '<p class="placeholder-text">No free HTML ebooks found matching your query. Try a different term (e.g., author or title of a classic public domain work).</p>';
+                return;
+            }
+
+            resultsContainer.innerHTML = ''; // Clear existing content
+            
+            books.forEach(book => {
+                const bookCard = document.createElement('div');
+                bookCard.className = 'book-card-public';
+                
+                const authorText = book.author;
+                const subjects = (book.subjects || []).slice(0, 3).join(', ');
+
+                // The whole bookCard is the context for the hidden form submission
+                bookCard.innerHTML = `
+                    <div class="book-cover-container">
+                        ${book.thumbnail_url 
+                            ? `<img src="${book.thumbnail_url}" alt="${book.title} cover" class="book-cover-img">`
+                            : `<div class="no-cover">No Cover</div>`}
+                    </div>
+                    <div class="book-info-public">
+                        <h3>${book.title}</h3>
+                        <p><strong>Author:</strong> ${authorText}</p>
+                        ${subjects ? `<p><strong>Genres:</strong> ${subjects}</p>` : ''}
+                        <div class="book-actions-public">
+                            <button class="preview-btn filter-button secondary-button" 
+                                    data-title="${book.title}" 
+                                    data-author="${authorText}"
+                                    data-gutenberg-url="${book.gutenberg_url}">
+                                👁️ Preview
+                            </button>
+
+                            <form method="POST" action="{{ url_for('add_book') }}" class="add-book-form" data-book-title="${book.title}">
+                                <input type="hidden" name="title" value="${book.title}">
+                                <input type="hidden" name="author" value="${authorText}">
+                                <input type="hidden" name="gutenberg_url" value="${book.gutenberg_url}">
+                                <input type="hidden" name="thumbnail_url" value="${book.thumbnail_url || ''}">
+                                <input type="hidden" name="status" value="To Read">
+                                <input type="hidden" name="genre" value="${(book.subjects || []).join(', ')}"> 
+                                <input type="hidden" name="current_page" value="0">
+                                <button type="submit" class="add-book-btn filter-button">➕ Add to My Books</button>
+                            </form>
+                        </div>
+                    </div>
+                `;
+                resultsContainer.appendChild(bookCard);
+            });
+        };
+
+        // --- Preview Modal Logic ---
+
+        // Function to close modal
+        const closeModals = () => {
+            modal.style.display = "none";
+            modalContent.innerHTML = ''; 
+        };
+
+        // Close modal when X is clicked
+        closeModalButton.onclick = closeModals;
+
+        // Close modal when clicking outside
+        window.onclick = (event) => {
+            if (event.target == modal) {
+                closeModals();
+            }
+        };
+
+        // Delegate event listener for the Preview button
+        resultsContainer.addEventListener('click', async (e) => {
+            if (e.target.classList.contains('preview-btn')) {
+                const button = e.target;
+                const title = button.dataset.title;
+                const author = button.dataset.author;
+                const url = button.dataset.gutenbergUrl;
+
+                modalTitle.textContent = `Preview: ${title} by ${author}`;
+                modalContent.innerHTML = '<p class="loading-text">Fetching content snippet...</p>';
+                modal.style.display = "block";
+                
+                // --- Link Modal Add Button to the specific book's form ---
+                const originalAddForm = button.closest('.book-card-public').querySelector('.add-book-form');
+                
+                // Clone and replace the modalAddButton to safely remove all previous listeners
+                const oldModalAddButton = modalAddButton;
+                modalAddButton = oldModalAddButton.cloneNode(true);
+                oldModalAddButton.replaceWith(modalAddButton);
+                
+                // Add new listener to submit the original form, then close the modal
+                modalAddButton.addEventListener('click', () => {
+                    originalAddForm.submit();
+                });
+                // --- End Linking ---
+
+
+                try {
+                    const response = await fetch('/api/preview_book', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ gutenberg_url: url })
+                    });
+                    
+                    const result = await response.json();
+
+                    if (response.ok && result.success) {
+                        modalContent.innerHTML = result.content;
+                    } else {
+                        modalContent.innerHTML = `<p class="error-text">Failed to load preview: ${result.error || 'Server error.'}</p>`;
+                    }
+                } catch (error) {
+                    modalContent.innerHTML = '<p class="error-text">A network error occurred while trying to load the preview.</p>';
+                }
+            }
+        });
+        
+    });
+  </script>
+</body>
+</html>

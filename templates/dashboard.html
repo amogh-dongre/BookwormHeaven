@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard</title>
+  <script>
+    // Immediately apply dark mode if preferred, to prevent flash of light mode
+    if (localStorage.getItem('darkMode') === 'true') {
+      document.documentElement.classList.add('dark-mode'); // Use document.documentElement
+    }
+  </script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='clock.css') }}">
+  <script src="{{ url_for('static', filename='autocomplete.js') }}"></script>
+  <script src="{{ url_for('static', filename='clock.js') }}"></script>
+  <script src="{{ url_for('static', filename='theme-toggle.js') }}"></script>
+</head>
+<body>
+  <div class="main-layout-container">
+    <div class="analog-clock">
+      <div class="hand hour-hand"></div>
+      <div class="hand minute-hand"></div>
+      <div class="hand second-hand"></div>
+      <div class="center-dot"></div>
+    </div>
+
+    <div class="main-content-area">
+      <div class="toggle-container">
+        <button id="darkModeToggle">🌓 Toggle Dark Mode</button>
+      </div>
+
+      <div class="dashboard-container">
+        <h2>📚 Your Book Dashboard</h2>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <ul class="flashes">
+              {% for category, message in messages %}
+                <li class="{{ category }}">{{ message }}</li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        {% endwith %}
+
+        <form method="POST" action="/add">
+          <label>
+            Title:
+            <input name="title" id="titleInput" autocomplete="off" required>
+            <div id="suggestionBox" style="display: none;"></div>
+          </label>    
+
+          <label>
+            Author:
+            <input name="author">
+          </label>
+
+          <label>
+            Genre:
+            <input name="genre">
+          </label>
+
+          <label>
+            Status:
+            <select name="status" id="statusSelect">
+              <option>To Read</option>
+              <option>Reading</option>
+              <option>Read</option>
+            </select>
+          </label>
+
+          <label id="currentPageLabel">
+            Current Page:
+            <input type="number" name="current_page" id="currentPageInput" min="0" value="0">
+          </label>
+          
+          <input type="hidden" name="google_books_id">
+          <input type="hidden" name="thumbnail_url">
+
+          <button type="submit">Add Book</button>
+        </form>
+
+        <div class="button-group" style="justify-content: center;"> {# Center the buttons #}
+          <a href="{{ url_for('search_public_books') }}" class="filter-button" style="background-color: var(--accent); color: white;">🔍 Search Free Ebooks</a>
+          <a href="{{ url_for('analysis') }}" class="filter-button">Analysis</a>
+          <a href="/my_books" class="filter-button">My Books</a> {# Use a button-like style #}
+          <a href="/logout" class="filter-button">Logout</a> {# Consistent styling #}
+        </div>
+      </div>
+    </div> </div> <script>
+    // Moved toggleDarkMode logic to theme-toggle.js
+    // Replaced window.onload with DOMContentLoaded for current page logic
+    document.addEventListener('DOMContentLoaded', () => {
+      const statusSelect = document.getElementById('statusSelect');
+      const currentPageInput = document.getElementById('currentPageInput');
+      const currentPageLabel = document.getElementById('currentPageLabel');
+
+      function handleStatusChange() {
+        if (statusSelect.value === 'Reading') {
+          currentPageInput.disabled = false;
+          currentPageInput.required = true; // Make it required when 'Reading'
+          currentPageLabel.style.opacity = '1';
+          currentPageLabel.style.pointerEvents = 'auto';
+        } else {
+          currentPageInput.disabled = true;
+          currentPageInput.required = false; // Not required when disabled
+          currentPageInput.value = 0; // Reset value when disabled
+          currentPageLabel.style.opacity = '0.5'; // Visually indicate disabled
+          currentPageLabel.style.pointerEvents = 'none'; // Prevent interaction
+        }
+      }
+
+      statusSelect.addEventListener('change', handleStatusChange);
+      handleStatusChange(); // Call on load to set initial state
+    });
+  </script>
+
+</body>
+</html>

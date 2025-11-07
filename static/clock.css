@@ -1,0 +1,74 @@
+/* Clock Container */
+.analog-clock {
+  width: 100px;
+  height: 100px;
+  border: 4px solid var(--text-light);
+  border-radius: 50%;
+  position: relative;
+  float: left; /* Aligns to the left */
+  margin-right: 20px; /* Space between clock and content */
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  background-color: var(--card-bg-light);
+  transition: all 0.3s ease;
+}
+
+body.dark-mode .analog-clock {
+  border: 4px solid var(--text-dark);
+  box-shadow: 0 0 15px rgba(0,0,0,0.2);
+  background-color: var(--card-bg-dark);
+}
+
+/* Clock Hands */
+.hand {
+  position: absolute;
+  transform-origin: bottom;
+  background-color: var(--text-light);
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+body.dark-mode .hand {
+  background-color: var(--text-dark);
+}
+
+.hour-hand {
+  width: 4px;
+  height: 30px;
+  top: 20px;
+  left: 48px;
+}
+
+.minute-hand {
+  width: 3px;
+  height: 40px;
+  top: 10px;
+  left: 48.5px;
+}
+
+.second-hand {
+  width: 2px;
+  height: 45px;
+  top: 5px;
+  left: 49px;
+  background-color: var(--accent); /* Accent color for second hand */
+}
+
+body.dark-mode .second-hand {
+  background-color: var(--accent-hover);
+}
+
+/* Center Dot */
+.center-dot {
+  width: 8px;
+  height: 8px;
+  background-color: var(--accent);
+  border-radius: 50%;
+  position: absolute;
+  top: 46px;
+  left: 46px;
+  z-index: 10;
+}
+
+body.dark-mode .center-dot {
+  background-color: var(--accent-hover);
+}

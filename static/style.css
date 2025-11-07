@@ -1,0 +1,1149 @@
+:root {
+  --bg-light: #f0f5ee; /* Faded green light background */
+  --text-light: #2c3e50;
+  --bg-dark: #1e1e1e;
+  --text-dark: #e0e0e0;
+  --card-bg-light: white;
+  --card-bg-dark: #2b2b2b;
+  --accent: #6b9e7d; /* Faded green accent color */
+  --accent-hover: #5a856a; /* Slightly darker faded green for hover */
+  --border-color-light: #ccc;
+  --border-color-dark: #555;
+  --input-bg-light: white;
+  --input-bg-dark: #3a3a3a;
+}
+
+/* Base body styles - these are applied regardless of theme */
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
+  padding: 0;
+  transition: all 0.3s ease;
+  min-height: 100vh; /* Ensure body takes full viewport height */
+  box-sizing: border-box;
+  /* Removed: display: flex, align-items, justify-content from body, as .main-layout-container handles this now */
+}
+
+/* Theme-specific styles applied to the html element */
+html.dark-mode { /* Changed from body.dark-mode */
+  background-color: var(--bg-dark);
+  color: var(--text-dark);
+}
+
+/* Default light mode styles applied to the html element */
+html {
+  background-color: var(--bg-light);
+  color: var(--text-light);
+}
+
+
+/* New: Main Layout Container (Wraps Clock and Main Content) */
+.main-layout-container {
+  display: flex;
+  min-height: 100vh; /* Ensure it takes full viewport height */
+  width: 100%;
+  box-sizing: border-box;
+  padding-left: 20px; /* Padding for the clock's left side */
+}
+
+/* Analog Clock adjustments for the new layout */
+.analog-clock {
+  width: 100px;
+  height: 100px;
+  border: 4px solid var(--text-light);
+  border-radius: 50%;
+  position: sticky; /* Make it sticky so it scrolls with the page minimally or stays in view */
+  top: 20px; /* Position it from the top */
+  margin-right: 20px; /* Space between clock and content */
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  background-color: var(--card-bg-light);
+  transition: all 0.3s ease;
+  flex-shrink: 0; /* Prevent it from shrinking */
+  align-self: flex-start; /* Align it to the start of the cross-axis (top) */
+}
+
+html.dark-mode .analog-clock { /* Changed from body.dark-mode */
+  border: 4px solid var(--text-dark);
+  box-shadow: 0 0 15px rgba(0,0,0,0.2);
+  background-color: var(--card-bg-dark);
+}
+
+/* Clock Hands */
+.hand {
+  position: absolute;
+  transform-origin: bottom;
+  background-color: var(--text-light);
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+html.dark-mode .hand { /* Changed from body.dark-mode */
+  background-color: var(--text-dark);
+}
+
+.hour-hand {
+  width: 4px;
+  height: 30px;
+  top: 20px;
+  left: 48px;
+}
+
+.minute-hand {
+  width: 3px;
+  height: 40px;
+  top: 10px;
+  left: 48.5px;
+}
+
+.second-hand {
+  width: 2px;
+  height: 45px;
+  top: 5px;
+  left: 49px;
+  background-color: var(--accent); /* Accent color for second hand */
+}
+
+html.dark-mode .second-hand { /* Changed from body.dark-mode */
+  background-color: var(--accent-hover);
+}
+
+/* Center Dot */
+.center-dot {
+  width: 8px;
+  height: 8px;
+  background-color: var(--accent);
+  border-radius: 50%;
+  position: absolute;
+  top: 46px;
+  left: 46px;
+  z-index: 10;
+}
+
+html.dark-mode .center-dot { /* Changed from body.dark-mode */
+  background-color: var(--accent-hover);
+}
+
+/* Main Content Area - This will take remaining space and center its content */
+.main-content-area {
+  flex-grow: 1; /* Allows it to take up remaining space */
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Center content horizontally */
+  justify-content: center; /* Center content vertically, if there's extra space */
+  padding: 20px; /* Add some padding around the content */
+  box-sizing: border-box;
+}
+
+
+/* Auth Container (for login, register, forgot_password, index) */
+.auth-container {
+  width: 100%; /* Take full width of its parent (.main-content-area) */
+  max-width: 400px; /* Limit its max width */
+  padding: 20px;
+  background: var(--card-bg-light);
+  border-radius: 12px;
+  box-shadow: 0 0 15px rgba(0,0,0,0.1);
+  transition: background 0.3s ease;
+  box-sizing: border-box;
+  text-align: center; /* Center text within the container */
+}
+
+html.dark-mode .auth-container { /* Changed from body.dark-mode */
+  background: var(--card-bg-dark);
+  box-shadow: 0 0 20px rgba(0,0,0,0.3);
+}
+
+/* Dashboard Container */
+.dashboard-container {
+  max-width: 750px;
+  width: 100%; /* Take full width of its parent (.main-content-area) up to max-width */
+  padding: 20px;
+  background: var(--card-bg-light);
+  border-radius: 12px;
+  box-shadow: 0 0 15px rgba(0,0,0,0.1);
+  transition: background 0.3s ease;
+  box-sizing: border-box;
+  margin-top: 20px; /* Add some top margin to separate from the top of the viewport */
+  margin-bottom: 20px; /* Add some bottom margin */
+}
+
+/* Endorse Page Container */
+.endorse-container {
+  background: var(--card-bg-dark); /* Matches dark theme card */
+  color: var(--text-dark);
+  text-align: center;
+  padding: 30px;
+}
+
+html:not(.dark-mode) .endorse-container {
+  background: var(--card-bg-light);
+  color: var(--text-light);
+}
+
+
+.endorse-container h2 {
+  color: var(--accent);
+  margin-bottom: 10px;
+}
+
+.endorse-author {
+  font-size: 1rem;
+  margin-bottom: 20px;
+  font-style: italic;
+  opacity: 0.85;
+}
+
+
+
+/* Buttons */
+.endorse-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.endorse-btn {
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: bold;
+  color: white;
+  text-decoration: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.endorse-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+/* WhatsApp button */
+.whatsapp-btn {
+  background-color: #25D366;
+}
+.whatsapp-btn:hover {
+  background-color: #1ebe5d;
+}
+
+/* Instagram button */
+.instagram-btn {
+  background: linear-gradient(45deg, #f58529, #dd2a7b, #8134af, #515bd4);
+}
+.instagram-btn:hover {
+  opacity: 0.9;
+}
+
+
+
+html.dark-mode .dashboard-container { /* Changed from body.dark-mode */
+  background: var(--card-bg-dark);
+  box-shadow: 0 0 20px rgba(0,0,0,0.3);
+}
+
+h2, h3 {
+  color: var(--accent);
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+html.dark-mode h2, html.dark-mode h3 { /* Changed from body.dark-mode */
+  color: var(--accent-hover);
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 30px;
+  align-items: center; /* Center form elements horizontally within the form */
+}
+
+label {
+  font-weight: bold;
+  color: var(--text-light);
+  width: 100%; /* Make label take full width */
+  text-align: left; /* Align label text to left */
+}
+
+html.dark-mode label { /* Changed from body.dark-mode */
+  color: var(--text-dark);
+}
+
+input[type="text"],
+input[type="password"],
+input[type="email"],
+input[type="number"],
+select {
+  padding: 10px;
+  border: 1px solid var(--border-color-light);
+  border-radius: 6px;
+  font-size: 1rem;
+  width: 100%;
+  max-width: 350px; /* Limit input width for better appearance */
+  box-sizing: border-box;
+  background-color: var(--input-bg-light);
+  color: var(--text-light);
+  transition: all 0.2s ease;
+  margin-top: 5px; /* Space between label and input */
+}
+
+html.dark-mode input[type="text"], /* Changed from body.dark-mode */
+html.dark-mode input[type="password"], /* Changed from body.dark-mode */
+html.dark-mode input[type="email"], /* Changed from body.dark-mode */
+html.dark-mode input[type="number"], /* Changed from body.dark-mode */
+html.dark-mode select { /* Changed from body.dark-mode */
+  border-color: var(--border-color-dark);
+  background-color: var(--input-bg-dark);
+  color: var(--text-dark);
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="email"]:focus,
+input[type="number"]:focus,
+select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 5px rgba(107, 158, 125, 0.5);
+}
+
+button[type="submit"],
+.button-group a {
+  background-color: var(--accent);
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  text-decoration: none; /* For button-group a */
+  display: inline-block; /* For button-group a */
+  text-align: center; /* For button-group a */
+}
+
+button[type="submit"]:hover,
+.button-group a:hover {
+  background-color: var(--accent-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+  width: 100%; /* Ensure list takes full width for consistent alignment */
+}
+
+li {
+  background: var(--input-bg-light);
+  border: 1px solid var(--border-color-light);
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  transition: all 0.2s ease;
+  text-align: left; /* Ensure text alignment within list item */
+}
+
+html.dark-mode li { /* Changed from body.dark-mode */
+  background: var(--input-bg-dark);
+  border-color: var(--border-color-dark);
+  box-shadow: 0 1px 5px rgba(0,0,0,0.2);
+}
+
+li:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+li div {
+  flex-grow: 1;
+}
+
+li a {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: bold;
+}
+
+li a:hover {
+  text-decoration: underline;
+  color: var(--accent-hover);
+}
+
+.book-display {
+  display: flex;
+  align-items: center;
+  flex: 1; /* book info takes all available space */
+}
+
+.book-info {
+  flex-grow: 1;
+}
+
+.book-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.book-actions button,
+.book-actions a {
+  background-color: var(--accent);
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.book-actions button:hover,
+.book-actions a:hover {
+  background-color: var(--accent-hover);
+}
+
+.flash-messages {
+  list-style: none;
+  padding: 0;
+  margin-bottom: 20px;
+  width: 100%;
+  text-align: center;
+}
+
+.flashes { /* Corrected class name as per your HTML */
+  list-style: none;
+  padding: 0;
+  margin-bottom: 20px;
+  width: 100%;
+  text-align: center;
+}
+
+.flashes li {
+  padding: 10px;
+  border-radius: 6px;
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+
+.flashes .success {
+  background-color: #d4edda;
+  color: #155724;
+  border-color: #c3e6cb;
+}
+
+html.dark-mode .flashes .success { /* Changed from body.dark-mode */
+  background-color: #1e3f28; /* Darker green for dark mode success */
+  color: #c3e6cb;
+  border-color: #2c5136;
+}
+
+.flashes .danger {
+  background-color: #f8d7da;
+  color: #721c24;
+  border-color: #f5c6cb;
+}
+
+html.dark-mode .flashes .danger { /* Changed from body.dark-mode */
+  background-color: #5a2e31; /* Darker red for dark mode danger */
+  color: #f5c6cb;
+  border-color: #723c3f;
+}
+
+.flashes .info {
+  background-color: #d1ecf1;
+  color: #0c5460;
+  border-color: #bee5eb;
+}
+
+html.dark-mode .flashes .info { /* Changed from body.dark-mode */
+  background-color: #1a3a41; /* Darker blue for dark mode info */
+  color: #bee5eb;
+  border-color: #254a52;
+}
+
+.link {
+  margin-top: 15px;
+  font-size: 0.9rem;
+}
+
+.link a {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.link a:hover {
+  text-decoration: underline;
+  color: var(--accent-hover);
+}
+
+#currentPageLabel {
+  transition: opacity 0.3s ease, pointer-events 0.3s ease;
+}
+
+.thumbnail {
+  width: 60px;
+  height: auto;
+  border-radius: 4px;
+  margin-right: 10px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+/* Autocomplete Suggestions */
+#suggestionBox {
+  position: absolute;
+  border: 1px solid var(--border-color-light);
+  max-height: 200px;
+  overflow-y: auto;
+  background-color: var(--card-bg-light);
+  z-index: 100;
+  width: calc(100% - 2px); /* Adjust based on input width and border */
+  box-sizing: border-box;
+  border-radius: 6px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  left: 0; /* Align to the left of the input */
+}
+
+html.dark-mode #suggestionBox { /* Changed from body.dark-mode */
+  border: 1px solid var(--border-color-dark);
+  background-color: var(--card-bg-dark);
+  color: var(--text-dark);
+}
+
+.suggestion-item {
+  padding: 10px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border-color-light);
+}
+
+html.dark-mode .suggestion-item { /* Changed from body.dark-mode */
+  border-bottom: 1px solid var(--border-color-dark);
+}
+
+.suggestion-item:last-child {
+  border-bottom: none;
+}
+
+.suggestion-item:hover {
+  background-color: var(--accent);
+  color: white;
+}
+
+html.dark-mode .suggestion-item:hover { /* Changed from body.dark-mode */
+  background-color: var(--accent-hover);
+  color: white;
+}
+
+.suggestion-item img {
+  vertical-align: middle;
+  margin-right: 10px;
+  border-radius: 2px;
+}
+
+
+/* Toggle Button */
+.toggle-container {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+}
+
+.toggle-container button {
+  background: transparent;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 14px;
+  box-shadow: none;
+}
+
+.toggle-container button:hover {
+  background-color: var(--accent);
+  color: white;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Centering for auth pages (index, login, register) */
+/* This .auth-container was causing issues due to height: 100vh when main-layout-container is also 100vh */
+/* Re-evaluating based on the new HTML structure */
+/* If this is meant for pages without the clock, it might need to be outside main-layout-container */
+/* For pages with the clock AND centered auth content, .main-content-area handles centering */
+/* Assuming .auth-container is for the content *within* .main-content-area (or standalone pages) */
+.auth-container {
+  width: 100%; /* Take full width of its parent */
+  max-width: 400px; /* Limit its max width */
+  padding: 20px;
+  background: var(--card-bg-light);
+  border-radius: 12px;
+  box-shadow: 0 0 15px rgba(0,0,0,0.1);
+  transition: background 0.3s ease;
+  box-sizing: border-box;
+  text-align: center; /* Center text within the container */
+  /* Remove flex properties here if it's already a child of a flex container that centers it */
+}
+
+
+.button-group {
+  display: flex;
+  gap: 16px;
+  margin-top: 20px;
+  justify-content: center;
+}
+
+.button-group a {
+  padding: 10px 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Filter buttons for My Books page */
+.filter-button {
+  background-color: var(--accent);
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  font-size: 0.9rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  text-decoration: none; /* Override default link styling */
+  display: inline-block; /* Allow padding and margin */
+}
+
+.filter-button:hover {
+  background-color: var(--accent-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+  text-decoration: none;
+}
+
+.filter-button.active-filter {
+  background-color: var(--accent-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+  border: 1px solid white; /* Indicate active state */
+}
+
+html.dark-mode .filter-button.active-filter { /* Changed from body.dark-mode */
+  border: 1px solid var(--text-dark);
+}
+
+.no-data-placeholder {
+  text-align: center;
+  padding: 40px;
+  font-size: 1.1rem;
+  color: var(--text-light);
+  background: var(--card-bg-light);
+  border: 2px dashed var(--accent);
+  border-radius: 12px;
+}
+
+html.dark-mode .no-data-placeholder {
+  color: var(--text-dark);
+  background: var(--card-bg-dark);
+  border-color: var(--accent-hover);
+}
+
+.no-data-placeholder p {
+  margin: 10px 0;
+}
+
+.no-data-placeholder .filter-button {
+  margin-top: 15px;
+  display: inline-block;
+}
+
+.analysis-layout {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 40px;
+  flex-wrap: wrap; /* responsive */
+  margin-top: 20px;
+}
+
+.chart-container {
+  flex: 2;
+  min-width: 300px;
+  max-width: 500px;
+}
+
+.stats-box {
+  flex: 0 0 220px;  /* Fixed width for stats */
+  background: var(--card-bg-light);
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+html.dark-mode .stats-box {
+  background: var(--card-bg-dark);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+.search-form {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 30px;
+    align-items: flex-end;
+}
+
+.search-form label {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    font-weight: bold;
+}
+
+.search-form input[type="text"] {
+    padding: 10px;
+    border: 1px solid var(--border-color-light);
+    border-radius: 6px;
+    margin-top: 5px;
+    background: var(--input-bg-light);
+    color: var(--text-light);
+    width: 100%;
+    box-sizing: border-box;
+}
+
+html.dark-mode .search-form input[type="text"] {
+    border-color: var(--border-color-dark);
+    background: var(--input-bg-dark);
+    color: var(--text-dark);
+}
+
+.book-results-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.book-card-public {
+    display: flex;
+    background: var(--card-bg-light);
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    transition: box-shadow 0.3s ease;
+    border: 1px solid var(--border-color-light);
+    gap: 20px;
+}
+
+html.dark-mode .book-card-public {
+    background: var(--card-bg-dark);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    border-color: var(--border-color-dark);
+}
+
+.book-cover-container {
+    flex-shrink: 0;
+    width: 100px;
+    height: 150px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    border-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+}
+
+.book-cover-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.no-cover {
+    background-color: var(--border-color-light);
+    color: var(--text-light);
+    text-align: center;
+    line-height: 150px;
+    font-size: 0.9em;
+    width: 100%;
+    height: 100%;
+}
+
+html.dark-mode .no-cover {
+    background-color: var(--border-color-dark);
+    color: var(--text-dark);
+}
+
+.book-info-public {
+    flex-grow: 1;
+}
+
+.book-info-public h3 {
+    margin-top: 0;
+    margin-bottom: 5px;
+    font-size: 1.4em;
+    color: var(--accent);
+}
+
+.book-actions-public {
+    margin-top: 15px;
+    display: flex;
+    gap: 10px;
+}
+
+.add-book-form {
+    display: inline-block;
+}
+
+.add-book-btn, .preview-btn {
+    font-size: 0.85em;
+    padding: 8px 15px;
+}
+
+.secondary-button {
+    background-color: var(--border-color-light);
+    color: var(--text-light);
+}
+
+html.dark-mode .secondary-button {
+    background-color: var(--border-color-dark);
+    color: var(--text-dark);
+}
+
+.placeholder-text, .loading-text, .error-text {
+    text-align: center;
+    padding: 20px;
+    font-style: italic;
+    color: var(--text-light);
+}
+
+html.dark-mode .placeholder-text, 
+html.dark-mode .loading-text, 
+html.dark-mode .error-text {
+    color: var(--text-dark);
+}
+
+.error-text {
+    color: #cc0000;
+    font-weight: bold;
+}
+
+@media (max-width: 600px) {
+    .book-card-public {
+        flex-direction: column;
+        align-items: center;
+    }
+    .book-cover-container {
+        width: 100px;
+        height: 150px;
+    }
+    .book-actions-public {
+        flex-direction: column;
+    }
+}
+
+/* --- Public Book Reader Styles (read_public.html) --- */
+.reader-container {
+    padding: 20px;
+    line-height: 1.6;
+    font-size: 1.1em;
+    max-width: 800px;
+    margin: 0 auto;
+    background: var(--card-bg-light);
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+html.dark-mode .reader-container {
+    background: var(--card-bg-dark);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+}
+
+.reader-container h2 {
+    text-align: center;
+    color: var(--accent);
+    margin-top: 30px;
+    margin-bottom: 20px;
+}
+
+.book-content-display {
+    border-top: 1px solid var(--border-color-light);
+    padding-top: 20px;
+    white-space: pre-wrap; 
+}
+
+html.dark-mode .book-content-display {
+    border-top: 1px solid var(--border-color-dark);
+}
+
+.book-content-display a {
+    color: var(--accent-hover);
+    text-decoration: none;
+}
+
+/* --- Preview Modal Styles --- */
+
+/* The Modal (background) */
+.modal {
+    display: none; 
+    position: fixed; 
+    z-index: 100; 
+    left: 0;
+    top: 0;
+    width: 100%; 
+    height: 100%; 
+    overflow: auto; 
+    background-color: rgba(0,0,0,0.7); 
+}
+
+/* Modal Content/Box */
+.modal-content {
+    background-color: var(--card-bg-light);
+    margin: 10% auto; 
+    padding: 20px;
+    border: 1px solid var(--border-color-light);
+    border-radius: 12px;
+    width: 80%; 
+    max-width: 700px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+    position: relative;
+    max-height: 80vh; 
+    overflow-y: auto;
+}
+
+html.dark-mode .modal-content {
+    background-color: var(--card-bg-dark);
+    border-color: var(--border-color-dark);
+}
+
+.modal-content h3 {
+    margin-top: 0;
+    border-bottom: 1px solid var(--border-color-light);
+    padding-bottom: 10px;
+}
+
+html.dark-mode .modal-content h3 {
+    border-bottom: 1px solid var(--border-color-dark);
+}
+
+/* The Close Button */
+.close-button {
+    color: var(--text-light);
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    line-height: 1;
+}
+
+html.dark-mode .close-button {
+    color: var(--text-dark);
+}
+
+.close-button:hover,
+.close-button:focus {
+    color: #cc0000;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+/* Content Area inside modal */
+#modalContent {
+    max-height: 55vh; 
+    overflow-y: auto;
+    padding: 10px 0;
+    line-height: 1.5;
+    font-size: 1em;
+}
+
+.modal-actions {
+    text-align: right;
+    padding-top: 15px;
+    border-top: 1px solid var(--border-color-light);
+    margin-top: 10px;
+}
+
+html.dark-mode .modal-actions {
+    border-top: 1px solid var(--border-color-dark);
+}
+
+.preview-note {
+    font-style: italic;
+    color: #999;
+    text-align: center;
+    padding: 10px;
+    border-top: 1px dashed #eee;
+    margin-top: 15px;
+}
+
+html.dark-mode .preview-note {
+    color: #888;
+    border-top: 1px dashed #444;
+}
+
+.recommendations-container {
+    margin-top: 30px;
+    padding: 20px;
+    grid-column: 1 / -1; /* Make it span full width below stats/chart */
+    box-sizing: border-box;
+}
+
+.recommendations-container h3 {
+    margin-top: 0;
+    margin-bottom: 5px;
+}
+
+.recommendations-container .subtitle {
+    font-size: 0.9em;
+    font-style: italic;
+    color: var(--text-light);
+    margin-bottom: 20px;
+}
+
+html.dark-mode .recommendations-container .subtitle {
+    color: var(--text-dark);
+}
+
+.recommendations-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+}
+
+.recommendation-card {
+    background-color: var(--input-bg-light); /* Lighter background than the container */
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    flex: 0 1 calc(33.333% - 20px); /* 3 cards per row, accounting for gap */
+    min-width: 250px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+html.dark-mode .recommendation-card {
+    background-color: var(--card-bg-dark);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.recommendation-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+}
+
+.book-thumbnail {
+    width: 100px;
+    height: auto;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.book-info {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 10px;
+}
+
+.book-title {
+    font-weight: bold;
+    font-size: 1.1em;
+    color: var(--text-light);
+    margin-bottom: 2px;
+}
+
+html.dark-mode .book-title {
+    color: var(--text-dark);
+}
+
+.book-author, .book-genre-rec {
+    font-size: 0.9em;
+    color: #666;
+}
+
+html.dark-mode .book-author, html.dark-mode .book-genre-rec {
+    color: #bbb;
+}
+
+.genre-tag {
+    display: inline-block;
+    background-color: var(--accent);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.8em;
+    font-weight: bold;
+    margin-right: 5px;
+    white-space: nowrap; /* Prevent wrapping */
+}
+
+/* Specific style for the link button to fit the card */
+.recommend-actions {
+    width: 100%;
+    margin-top: auto; /* Push to the bottom */
+    display: flex; /* Makes buttons stack vertically */
+    flex-direction: column;
+    gap: 5px; /* Add small space between buttons */
+    padding-top: 10px; /* Add some space above the buttons */
+}
+
+.recommend-actions .filter-button { 
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box; /* Include padding and border in the element's total width and height */
+}
+
+.no-recommendations-placeholder {
+    margin-top: 30px;
+    padding: 30px;
+    text-align: center;
+}
+
+/* Style for the "Not Interested" button (Danger/Dismissal color) */
+.danger-button {
+    background-color: #e74c3c; /* Red color */
+    border-color: #c0392b;
+    color: white;
+}
+
+.danger-button:hover {
+    background-color: #c0392b;
+}
+
+/* Transition for the recommendation card removal */
+.recommend-card {
+    transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+}
+.recommend-card.faded-out {
+    opacity: 0;
+    transform: translateY(20px);
+    pointer-events: none; /* Make sure it can't be clicked while fading */
+}
+
+/* Ensure autocomplete input is positioned correctly */
+form label {
+    position: relative; /* Make label a positioning context for suggestion box */
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; /* Align label text to the left */
+    width: 100%; /* Make label take full width for consistency */
+}
+
+/* Adjust input within the label to ensure it's centered if needed,
+    but mainly to adhere to max-width */
+form label input {
+    width: 100%; /* Fill the label's width */
+    max-width: 350px; /* Keep the max-width restriction */
+    align-self: center; /* Center the input within the label's available space if label is wider */
+}

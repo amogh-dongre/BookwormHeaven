@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>My Books</title>
+  <script>
+    if (localStorage.getItem('darkMode') === 'true') {
+      document.documentElement.classList.add('dark-mode');
+    }
+  </script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='clock.css') }}">
+  <script src="{{ url_for('static', filename='clock.js') }}" defer></script>
+  <script src="{{ url_for('static', filename='theme-toggle.js') }}" defer></script>
+</head>
+<body>
+  <div class="main-layout-container">
+    <div class="analog-clock">
+      <div class="hand hour-hand"></div>
+      <div class="hand minute-hand"></div>
+      <div class="hand second-hand"></div>
+      <div class="center-dot"></div>
+    </div>
+
+    <div class="main-content-area">
+      <div class="toggle-container">
+        <button id="darkModeToggle">🌓 Toggle Dark Mode</button>
+      </div>
+
+      <div class="dashboard-container">
+        <h2>Your Books</h2>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <ul class="flashes">
+                {% for category, message in messages %}
+                    <li class="{{ category }}">{{ message }}</li>
+                {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+
+        <div style="text-align: center; margin-bottom: 20px;">
+          <a href="{{ url_for('my_books', filter='all') }}" class="filter-button {% if current_filter == 'all' %}active-filter{% endif %}">All Books</a>
+          <a href="{{ url_for('my_books', filter='To Read') }}" class="filter-button {% if current_filter == 'To Read' %}active-filter{% endif %}">To Read</a>
+          <a href="{{ url_for('my_books', filter='Reading') }}" class="filter-button {% if current_filter == 'Reading' %}active-filter{% endif %}">Reading</a>
+          <a href="{{ url_for('my_books', filter='Read') }}" class="filter-button {% if current_filter == 'Read' %}active-filter{% endif %}">Read</a>
+          <a href="{{ url_for('dashboard') }}" class="filter-button secondary-button">Back to Dashboard</a>
+        </div>
+
+        <ul>
+          {% for book in books %}
+            <li>
+              <div class="book-display">
+                {% if book['thumbnail_url'] %}
+                  <img src="{{ book['thumbnail_url'] }}" alt="Cover" class="thumbnail">
+                {% endif %}
+                <div class="book-info">
+                  <strong>{{ book['title'] }}</strong> by {{ book['author'] }} ({{ book['status'] }}) —
+                  {% if book['genre'] %}
+                    <span class="book-genre">{{ book['genre'] }}</span>
+                  {% endif %}
+
+                  {% if book['current_page'] is not none and book['current_page'] > 0 %}
+                    Current Page: {{ book['current_page'] }}
+                  {% else %}
+                    No page recorded
+                  {% endif %}
+                </div>
+                
+                {% if book['gutenberg_url'] %}
+                <a href="{{ url_for('view_book', book_id=book.id) }}" class="read-btn filter-button" style="background-color: #007bff; margin-left: auto;">📚 Read Book</a>
+                {% endif %}
+
+                <!-- ✅ New Endorse Button -->
+                <a href="{{ url_for('endorse_book', book_id=book.id) }}" class="filter-button" style="background-color: #28a745; margin-left: 10px;">
+                  🌟 Endorse
+                </a>
+                
+                <button class="edit-btn filter-button">Edit</button>
+                
+                <form method="POST" action="{{ url_for('delete_book', book_id=book.id) }}" onsubmit="return confirm('Are you sure you want to delete this book?')" style="margin-left: 10px;">
+                    <button type="submit" class="delete-btn filter-button">Delete</button>
+                </form>
+              </div>
+
+              <form method="POST" action="{{ url_for('update_book', book_id=book['id']) }}" class="edit-form" style="display: none;">
+                
+                <input type="hidden" name="title" value="{{ book['title'] }}">
+                <input type="hidden" name="author" value="{{ book['author'] or '' }}">
+                <input type="hidden" name="genre" value="{{ book['genre'] or '' }}">
+
+                <input type="text" name="new_genre" class="genre-input" placeholder="Genre (e.g., Fiction, Thriller)" value="{{ book['genre'] or '' }}">
+
+                <select name="status" class="status-select">
+                  <option {% if book['status'] == 'To Read' %}selected{% endif %}>To Read</option>
+                  <option {% if book['status'] == 'Reading' %}selected{% endif %}>Reading</option>
+                  <option {% if book['status'] == 'Read' %}selected{% endif %}>Read</option>
+                </select>
+                <input type="number" name="current_page" class="current-page-input" value="{{ book['current_page'] or 0 }}" min="0">
+                <button type="submit">Save</button>
+              </form>
+            </li>
+          {% endfor %}
+        </ul>
+        
+        {% if not books %}
+          <p style="text-align: center; margin-top: 20px; font-style: italic;">Your bookshelf is empty! Add some books from the dashboard.</p>
+        {% endif %}
+
+      </div>
+    </div>
+  </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Toggle edit form
+      const editButtons = document.querySelectorAll('.edit-btn');
+      editButtons.forEach(button => {
+        button.addEventListener('click', () => {
+          const listItem = button.closest('li');
+          const displayDiv = listItem.querySelector('.book-display');
+          const editForm = listItem.querySelector('.edit-form');
+          
+          // Hide book display and show edit form
+          displayDiv.style.display = 'none';
+          editForm.style.display = 'flex';
+        });
+      });
+
+      // Handle current page input based on status
+      const statusSelects = document.querySelectorAll('.status-select');
+      statusSelects.forEach(select => {
+        const form = select.closest('.edit-form');
+        const currentPageInput = form.querySelector('.current-page-input');
+
+        function handleStatusChange() {
+          if (select.value === 'Reading') {
+            currentPageInput.disabled = false;
+            currentPageInput.style.display = 'block';
+          } else {
+            currentPageInput.disabled = true;
+            currentPageInput.style.display = 'none';
+          }
+        }
+
+        select.addEventListener('change', handleStatusChange);
+        handleStatusChange();
+      });
+    });
+  </script>
+</body>
+</html>

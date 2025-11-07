@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Reading {{ book.title }}</title>
+  <script>
+    if (localStorage.getItem('darkMode') === 'true') {
+      document.documentElement.classList.add('dark-mode');
+    }
+  </script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='clock.css') }}">
+  <script src="{{ url_for('static', filename='clock.js') }}" defer></script>
+  <script src="{{ url_for('static', filename='theme-toggle.js') }}" defer></script>
+</head>
+<body>
+  <div class="main-layout-container">
+    <div class="analog-clock">
+      <div class="hand hour-hand"></div>
+      <div class="hand minute-hand"></div>
+      <div class="hand second-hand"></div>
+      <div class="center-dot"></div>
+    </div>
+
+    <div class="main-content-area">
+      <div class="toggle-container">
+        <button id="darkModeToggle">🌓 Toggle Dark Mode</button>
+      </div>
+
+      <div class="dashboard-container">
+        <div class="dashboard-actions" style="margin-bottom: 20px;">
+            <a href="{{ url_for('my_books') }}" class="filter-button secondary-button">← Back to My Books</a>
+        </div>
+        
+        <div class="reader-container">
+            <h2>{{ book.title }}</h2>
+            <p style="text-align: center; font-style: italic;">By {{ book.author }} (Content rendered from Project Gutenberg)</p>
+            
+            <div class="book-content-display">
+                {{ content | safe }}
+            </div>
+            
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

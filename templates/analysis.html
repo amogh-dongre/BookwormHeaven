@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Analysis</title>
+
+  <script>
+    if (localStorage.getItem('darkMode') === 'true') {
+      document.documentElement.classList.add('dark-mode');
+    }
+  </script>
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='clock.css') }}">
+
+  <script src="{{ url_for('static', filename='clock.js') }}" defer></script>
+  <script src="{{ url_for('static', filename='theme-toggle.js') }}" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+</head>
+<body>
+  <div class="main-layout-container">
+    <div class="analog-clock">
+      <div class="hand hour-hand"></div>
+      <div class="hand minute-hand"></div>
+      <div class="hand second-hand"></div>
+      <div class="center-dot"></div>
+    </div>
+
+    <div class="main-content-area">
+      <div class="toggle-container">
+        <button id="darkModeToggle">🌓 Toggle Dark Mode</button>
+      </div>
+      
+      <h2>Your Reading Analysis</h2>
+      
+      <div class="analysis-layout">
+        
+        <div class="stats-box">
+          <h4>Status Summary</h4>
+          <p><strong>Total Books:</strong> {{ total_books }}</p>
+          <p><strong>To Read:</strong> {{ to_read }}</p>
+          <p><strong>Reading:</strong> {{ reading }}</p>
+          <p><strong>Read:</strong> {{ read }}</p>
+          <hr>
+          <a href="{{ url_for('my_books') }}" class="filter-button">View My Books</a>
+        </div>
+        
+        <div class="chart-container">
+          <canvas id="genrePieChart" width="400" height="400"></canvas>
+          
+          <script id="genre-data" type="application/json">
+            {{ genre_data | tojson | safe }}
+          </script>
+        </div>
+        
+      </div>
+
+      {% if recommendations %}
+      <div class="recommendations-container card">
+        <h3>🌟 Top Recommendations for You</h3>
+        <p class="subtitle">Based on your profile: 
+          {% set recommended_genres = recommendations | map(attribute='genre') | unique | list %}
+          {% for genre in recommended_genres %}
+            <span class="genre-tag">{{ genre }}</span>{% if not loop.last %}, {% endif %}
+          {% endfor %}
+        </p>
+        
+        <div class="recommendations-list">
+          {% for book in recommendations %}
+          <div class="recommendation-card">
+            <img src="{{ book.thumbnail_url }}" alt="Cover of {{ book.title }}" class="book-thumbnail">
+            <div class="book-info">
+              <span class="book-title">{{ book.title }}</span>
+              <span class="book-author">by {{ book.author }}</span>
+              <span class="book-genre-rec">Recommended Genre: <span class="genre-tag">{{ book.genre }}</span></span>
+            </div>
+            <div class="recommend-actions">
+                <form method="POST" action="{{ url_for('add_book') }}" class="add-book-form">
+                  <input type="hidden" name="title" value="{{ book.title }}">
+                  <input type="hidden" name="author" value="{{ book.author }}">
+                  <input type="hidden" name="gutenberg_url" value="{{ book.gutenberg_url }}">
+                  <input type="hidden" name="thumbnail_url" value="{{ book.thumbnail_url or '' }}">
+                  <input type="hidden" name="genre" value="{{ book.genre }}">
+                  <input type="hidden" name="status" value="To Read">
+                  <button type="submit" class="filter-button">➕ Add to Shelf</button>
+                </form>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% else %}
+        <div class="no-recommendations-placeholder card">
+          <p>We couldn't generate recommendations yet. Add a few books with genres to start!</p>
+          <a href="{{ url_for('dashboard') }}" class="filter-button">➕ Add Book</a>
+        </div>
+      {% endif %}
+
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // FIX: Wait for Chart.js to load (since it's deferred)
+      if (typeof Chart === 'undefined') {
+        // Simple polling/retry mechanism for deferred script loading
+        return setTimeout(() => document.dispatchEvent(new Event('DOMContentLoaded')), 100);
+      }
+
+      const canvas = document.getElementById('genrePieChart');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      let genreChartInstance = null; 
+
+      function getGenreData() {
+        const dataEl = document.getElementById('genre-data');
+        if (dataEl) {
+          try {
+            // FIX: This now correctly expects 'counts' (because app.py was fixed)
+            const parsed = JSON.parse(dataEl.textContent || 'null');
+            // Check for required keys
+            if (parsed && parsed.labels && parsed.counts) {
+              return { labels: parsed.labels, counts: parsed.counts };
+            }
+          } catch (e) {
+            console.error('Could not parse embedded genre_data JSON:', e);
+          }
+        }
+        return { labels: [], counts: [] };
+      }
+
+      const generateHslColors = (count) => {
+        const colors = [];
+        if (count <= 0) return colors;
+        const saturation = 70;
+        const lightness = 60;
+        for (let i = 0; i < count; i++) {
+          const hue = Math.round((i * 360) / count) % 360;
+          colors.push(`hsl(${hue}, ${saturation}%, ${lightness}%)`);
+        }
+        return colors;
+      };
+
+      const getChartThemeColors = () => {
+        const isDark = document.documentElement.classList.contains('dark-mode');
+        return {
+          borderColor: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.08)', 
+          fontColor: isDark ? '#e0e0e0' : '#2c3e50' 
+        };
+      };
+
+      const renderChart = (data) => {
+        const { labels, counts } = data;
+        const backgroundColors = generateHslColors(labels.length);
+        const themeColors = getChartThemeColors();
+
+        const chartConfig = {
+          type: 'pie',
+          data: {
+            labels: labels,
+            datasets: [{
+              data: counts,
+              backgroundColor: backgroundColors,
+              borderColor: themeColors.borderColor,
+              borderWidth: 2
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'top',
+                labels: { color: themeColors.fontColor }
+              },
+              title: {
+                display: true,
+                text: 'Genre Distribution',
+                color: themeColors.fontColor,
+                font: { size: 18 }
+              }
+            }
+          }
+        };
+
+        if (genreChartInstance) {
+          genreChartInstance.destroy(); 
+        }
+        genreChartInstance = new Chart(ctx, chartConfig);
+      };
+
+      const showNoDataPlaceholder = () => {
+        const chartContainer = document.querySelector('.chart-container');
+        if (!chartContainer) return;
+
+        // Remove canvas to display placeholder
+        const existingCanvas = document.getElementById('genrePieChart');
+        if (existingCanvas) existingCanvas.remove(); 
+
+        const placeholder = document.createElement('div');
+        placeholder.className = 'no-data-placeholder'; 
+        placeholder.innerHTML = `
+          <p>📊 No genre data to show yet.</p>
+          <p>Add some books with genres and come back!</p>
+          <a href="/dashboard" class="filter-button">➕ Add Book</a>
+        `;
+        chartContainer.appendChild(placeholder);
+      };
+
+      const setupThemeObserver = () => {
+        // Observe changes to the dark-mode class on the <html> element
+        new MutationObserver(() => {
+          if (!genreChartInstance) return;
+          const nc = getChartThemeColors();
+          
+          genreChartInstance.options.plugins.legend.labels.color = nc.fontColor;
+          genreChartInstance.options.plugins.title.color = nc.fontColor;
+          genreChartInstance.data.datasets[0].borderColor = nc.borderColor;
+
+          genreChartInstance.update();
+        }).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+      };
+
+
+      const rawData = getGenreData();
+      
+      if (rawData.labels.length === 0) {
+        showNoDataPlaceholder();
+        return;
+      }
+
+      renderChart(rawData);
+      setupThemeObserver();
+    });
+  </script>
+
+</body>
+</html>

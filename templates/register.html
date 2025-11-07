@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Register</title>
+  <script>
+    // Immediately apply dark mode if preferred, to prevent flash of light mode
+    if (localStorage.getItem('darkMode') === 'true') {
+      document.documentElement.classList.add('dark-mode'); // Use document.documentElement
+    }
+  </script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='clock.css') }}">
+  <script src="{{ url_for('static', filename='clock.js') }}"></script>
+  <script src="{{ url_for('static', filename='theme-toggle.js') }}"></script> {# Added theme-toggle.js #}
+</head>
+<body>
+  <div class="main-layout-container">
+    <div class="analog-clock">
+      <div class="hand hour-hand"></div>
+      <div class="hand minute-hand"></div>
+      <div class="hand second-hand"></div>
+      <div class="center-dot"></div>
+    </div>
+
+    <div class="main-content-area">
+      <div class="toggle-container">
+        <button id="darkModeToggle">🌓 Toggle Dark Mode</button> {# Removed onclick #}
+      </div>
+      <div class="auth-container">
+        <h2>Register for MyBookShelf 📚</h2>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <ul class="flashes">
+              {% for category, message in messages %}
+                <li class="{{ category }}">{{ message }}</li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        {% endwith %}
+        <form method="POST" action="/register">
+          <label>
+            Username:
+            <input type="text" name="username" required>
+          </label>
+          <label>
+            Password:
+            <input type="password" name="password" required>
+          </label>
+          <label>
+            Age:
+            <input type="number" name="age" required>
+          </label>
+          <label>
+            Gender:
+            <select name="gender" required>
+              <option value="" disabled selected>Select your gender</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
+            </select>
+          </label>
+          <label>
+            Occupation:
+            <input type="text" name="occupation" required placeholder="e.g., Student, Engineer, Doctor">
+          </label>
+          <label>
+            Email:
+            <input type="email" name="email" required>
+          </label>
+          <button type="submit">Register</button>
+        </form>
+        <div class="link">
+          Already have an account? <a href="{{ url_for('login') }}">Login here</a>.
+        </div>
+      </div>
+    </div> </div> {# Removed inline script for dark mode #}
+</body>
+</html>
