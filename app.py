@@ -1,3 +1,5 @@
+from urllib.parse import urlparse
+import html
 # app.py
 
 import string
@@ -404,7 +406,7 @@ def reset_password(token):
         flash('Password reset link has expired. Please request a new one.', 'danger')
         with get_db_connection() as conn:
             conn.execute("DELETE FROM password_reset_tokens WHERE token = ?", (token,))
-            conn.commit()
+            conn.rollback()
         return redirect(url_for('login'))
 
     if request.method == 'POST':
@@ -578,13 +580,20 @@ def api_preview_book():
         return jsonify({'error': 'Unauthorized'}), 401
 
     gutenberg_url = request.json.get('gutenberg_url')
+    request_kwargs = dict(timeout=10, follow_redirects=False)
+    if gutenberg_url:
+        parsed_url = urlparse(gutenberg_url)
+        if (parsed_url.scheme != 'https' or parsed_url.hostname not in {'www.gutenberg.org', 'gutenberg.org'} or
+                parsed_url.username or parsed_url.password or parsed_url.port not in (None, 443)):
+            return jsonify({'error': 'Only HTTPS Project Gutenberg preview URLs are allowed.'}), 400
+        gutenberg_url = parsed_url.geturl()
 
     if not gutenberg_url:
         return jsonify({'error': 'Gutenberg URL is required for preview.'}), 400
 
     try:
         # Fetch the content with a short timeout
-        response = requests.get(gutenberg_url, timeout=10)
+        response = requests.get(gutenberg_url, timeout=request_kwargs['timeout'], allow_redirects=request_kwargs['follow_redirects'])
         response.raise_for_status()
         
         raw_html = response.text
@@ -597,9 +606,9 @@ def api_preview_book():
         
         # Construct the final HTML snippet with truncation note
         if len(cleaned_content) > 4000:
-            preview_html = f"<div class='preview-snippet'>{preview_snippet}... <p class='preview-note'>**Content truncated for preview. Add to your shelf to read the full text.**</p></div>"
+            preview_html = f"<div class='preview-snippet'>{html.escape(preview_snippet)}... <p class='preview-note'>**Content truncated for preview. Add to your shelf to read the full text.**</p></div>"
         else:
-            preview_html = f"<div class='preview-snippet'>{cleaned_content}</div>"
+            preview_html = f"<div class='preview-snippet'>{html.escape(cleaned_content)}</div>"
 
         return jsonify({'success': True, 'content': preview_html})
         

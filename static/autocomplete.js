@@ -1,7 +1,7 @@
 // autocomplete.js
 
 document.addEventListener('DOMContentLoaded', () => {
-    const GOOGLE_BOOKS_API_KEY = "AIzaSyDsiDhyDVcP75Lxwdgi5WBxYBPzcXkIKkk"; // <--- 🚨 Update this line
+    const AUTOCOMPLETE_API_ENDPOINT = '/api/google-books-autocomplete';
 
     const titleInput = document.querySelector('input[name="title"]');
     const authorInput = document.querySelector('input[name="author"]');
@@ -85,12 +85,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            const apiUrl = `https://www.googleapis.com/books/v1/volumes?q=intitle:${encodeURIComponent(query)}&maxResults=5&key=${GOOGLE_BOOKS_API_KEY}`;
+            const apiUrl = `${AUTOCOMPLETE_API_ENDPOINT}?q=${encodeURIComponent(query)}`;
             
-            const response = await fetch(apiUrl);
+            const response = await fetch(apiUrl, {
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                credentials: 'same-origin'
+            });
 
             if (!response.ok) {
-                console.error(`Google Books API returned status: ${response.status}`);
+                console.error(`Autocomplete API returned status: ${response.status}`);
                 const errorData = await response.json().catch(() => ({}));
                 console.error('API Error Details:', errorData);
                 suggestionBox.style.display = 'none';
@@ -208,4 +214,4 @@ document.addEventListener('DOMContentLoaded', () => {
         suggestionBox.style.border = '1px solid var(--border-color-dark)';
         suggestionBox.style.color = 'var(--text-dark)';
     }
-})
+});
